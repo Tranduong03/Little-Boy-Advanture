@@ -1,8 +1,10 @@
 #pragma once
 
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <iostream>
 #include <SDL_image.h>
+#include "TextureManager.h"
 
 class Engine
 {
@@ -13,7 +15,7 @@ public:
 	void update();
 	void render();
 	void clean();
-	
+
 	bool running() { return isRunning; };
 private:
 	bool isRunning;
