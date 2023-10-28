@@ -35,51 +35,47 @@ void Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 	}
 
 
-	Texture = TextureManager::Load_BG("bg/login0.png", renderer);
-	Texture2 = IMG_LoadTexture(renderer, "images/idle.gif");
+	Texture = TextureManager::Load_BG("bg/login0.png", renderer); // load images login
+	// Texture2 = IMG_LoadTexture(renderer, "images/idle.gif");
 }
 
 void Engine::handleEvents()
 {
 	SDL_Event event;
 	SDL_PollEvent(&event);
-	if (event.type == SDL_KEYDOWN) {
-		switch (event.key.keysym.sym) {
-		case SDLK_LEFT:
-			character_x -= speed;
-			break;
-		case SDLK_RIGHT:
-			character_x += speed;
-			break;
-		case SDLK_UP:
-			character_y -= speed;
-			break;
-		case SDLK_DOWN:
-			character_y += speed;
-			break;
+	if (event.type == SDL_KEYDOWN)
+	{
+		if (event.key.keysym.sym == SDLK_SPACE)
+		{
+			Texture = TextureManager::Load_BG("bg/endGame.jpg", renderer);
 		}
 	}
-	else if (event.type == SDL_QUIT) {
+	else if (event.type == SDL_MOUSEBUTTONDOWN)
+	{
+		if (event.button.button == SDL_BUTTON_LEFT)
+		{
+			Texture = TextureManager::Load_BG("bg/endGame.jpg", renderer);
+		}
+	}
+	else if (event.type == SDL_QUIT)
+	{
 		isRunning = false;
 	}
+}
+
+void Engine::update()
+{
+	count++;
+	std::cout << count << std::endl;
 }
 
 void Engine::render()
 {
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, Texture, NULL, NULL);
-	SDL_Rect Rect = { character_x, character_y, 100, 100 };
-	SDL_RenderCopy(renderer, Texture2, NULL, &Rect);
+	// SDL_Rect Rect = { character_x, character_y, 100, 100 };
+	// SDL_RenderCopy(renderer, Texture2, NULL, &Rect);
 	SDL_RenderPresent(renderer);
-}
-
-void Engine::update()
-{
-	count++;
-	
-	
-	
-	std::cout << count << std::endl;
 }
 
 void Engine::clean()
