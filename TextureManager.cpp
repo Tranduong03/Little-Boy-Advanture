@@ -1,10 +1,46 @@
 #include "TextureManager.h"
 
-SDL_Texture* TextureManager::Load_BG(const char* fileName, SDL_Renderer* renderer)
-{
-	SDL_Surface* Surface = IMG_Load(fileName);
-	SDL_Texture* text = IMG_LoadTexture(renderer, fileName);
-	SDL_FreeSurface(Surface);
+TextureManager* TextureManager::s_Instance = nullptr;
 
-	return text;
+bool TextureManager::Load(string id, const char* path) {
+	SDL_Surface* surface = IMG_Load(path);
+	if (surface == nullptr) {
+		SDL_Log("can't load texture: %s, %s", path, SDL_GetError());
+		return 0;
+	}
+
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(Engine::GetInstance()->GetRenderer(), surface);
+	if (texture == nullptr) {
+		SDL_Log("can't load texture: %s, %s", path, SDL_GetError());
+		return 0;
+	}
+	SDL_FreeSurface(surface);
+	listTexture[id] = texture;
 }
+
+SDL_Texture* TextureManager::GetTexture(string id)
+{
+	return listTexture[id];
+}
+
+void TextureManager::deleteATexture(string id)
+{
+	SDL_DestroyTexture(listTexture[id]);
+	listTexture.erase(id);
+}
+
+void TextureManager::Clean() { 
+	map<string, SDL_Texture*>::iterator it;
+	for (it = listTexture.begin(); it != listTexture.end(); it++) {
+		SDL_DestroyTexture(it->second);
+	}
+	listTexture.clear();
+}
+
+void TextureManager::Draw(string id, float x, float y, int width, int height, SDL_RendererFlip flip)
+{
+	SDL_Rect srcR = { 0,0,width,height }, destR = { int(x), int(y), width, height };
+	SDL_RenderCopyEx(Engine::GetInstance()->GetRenderer(), listTexture[id], &srcR, &destR, 0, nullptr, flip);
+}
+
+

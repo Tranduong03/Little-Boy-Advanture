@@ -76,12 +76,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2-2.24.0\include;C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2_ttf-2.20.1\include;C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2_mixer-2.6.2\include;C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2_image-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\SDL_lib\SDL2_image-2.6.2\include;C:\SDL_lib\SDL2_mixer-2.6.2\include;C:\SDL_lib\SDL2_ttf-2.20.1\include;C:\SDL_lib\SDL2-2.24.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2-2.24.0\lib\x86;C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2_ttf-2.20.1\lib\x86;C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2_mixer-2.6.2\lib\x86;C:\Users\ADMIN\source\repos\Little Boy Advanture\SDL_Lib\SDL2_image-2.6.2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\SDL_lib\SDL2_image-2.6.2\lib\x86;C:\SDL_lib\SDL2_mixer-2.6.2\lib\x86;C:\SDL_lib\SDL2_ttf-2.20.1\lib\x86;C:\SDL_lib\SDL2-2.24.0\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2test.lib;SDL2_mixer.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
