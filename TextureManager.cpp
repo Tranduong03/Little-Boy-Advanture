@@ -29,7 +29,7 @@ void TextureManager::deleteATexture(string id)
 	listTexture.erase(id);
 }
 
-void TextureManager::Clean() { 
+void TextureManager::Clean() {
 	map<string, SDL_Texture*>::iterator it;
 	for (it = listTexture.begin(); it != listTexture.end(); it++) {
 		SDL_DestroyTexture(it->second);
@@ -39,8 +39,6 @@ void TextureManager::Clean() {
 
 void TextureManager::Draw(string id, float x, float y, int width, int height, SDL_RendererFlip flip)
 {
-	SDL_Rect srcR = { 0,0,width,height }, destR = { int(x), int(y), width, height };
+	SDL_Rect srcR = { 0, 0, width, height }, destR = { int(x), int(y), width, height };
 	SDL_RenderCopyEx(Engine::GetInstance()->GetRenderer(), listTexture[id], &srcR, &destR, 0, nullptr, flip);
 }
-
-
