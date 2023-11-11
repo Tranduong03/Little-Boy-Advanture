@@ -55,9 +55,16 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 	TextureManager::GetInstance()->Load("tutorial", "bg/tutorial.png");
 	TextureManager::GetInstance()->Load("tutorialClick", "bg/tutorialClick.png");
 
-	TextureManager::GetInstance()->Load("BACK", "bg/backIcon.jpg");
-	TextureManager::GetInstance()->Load("BACKClick", "bg/backIconClick.jpg");
+	TextureManager::GetInstance()->Load("BACK", "bg/backIcon.png");
+	TextureManager::GetInstance()->Load("BACKClick", "bg/backIconClick.png");
 	TextureManager::GetInstance()->Load("tutorialScreen", "bg/TUTORIALSCR.png");
+
+	TextureManager::GetInstance()->Load("pixel", "bg/play/pixel.jpg");
+
+	TextureManager::GetInstance()->Load("easy", "bg/beforePlay/Easy.jpg");
+	TextureManager::GetInstance()->Load("nor", "bg/beforePlay/Normal.jpg");
+	TextureManager::GetInstance()->Load("hard", "bg/beforePlay/Advanced.jpg");
+	//Map::GetInstance(12,25,2);
 
 }
 
@@ -88,7 +95,7 @@ void Engine::update()
 void Engine::render()
 {
 	SDL_RenderClear(renderer);
-
+	Map::GetInstance()->DrawPixel();
 	SDL_RenderPresent(renderer);
 
 }
@@ -136,22 +143,21 @@ int Engine::Input() {
 			isRunning = false;
 			return 0;
 		case SDL_MOUSEBUTTONUP:
-			if (e.button.button == SDL_BUTTON_LEFT) 
+
+			if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				// play game
-				if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu && e.button.y <= t_Menu + 43) 
+				if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu && e.button.y <= t_Menu + 43)
 				{
 					TextureManager::GetInstance()->Draw("play", l_Menu, t_Menu, 200, 43);
-					BeforePlay();
+					return BeforePlay();
 				}
 				// tutorial
-				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 80 && e.button.y <= t_Menu + 123) 
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 80 && e.button.y <= t_Menu + 123)
 				{
-					TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + 80, 200, 43);
+					TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + 160, 200, 43);
 					return 1;
-
 				}
-				// quit
 				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 160 && e.button.y <= t_Menu + 203) 
 				{
 					TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 160, 200, 43);
@@ -161,6 +167,7 @@ int Engine::Input() {
 			}
 			break;
 		case SDL_MOUSEBUTTONDOWN:
+
 			if (e.button.button == SDL_BUTTON_LEFT) 
 			{
 				// play game
@@ -225,7 +232,9 @@ void Engine::Tutorial() {
 			break;
 		case SDL_QUIT:
 			clean();
+			TextureManager::GetInstance()->Clean();
 			isRunning = false;
+			return;
 		}
 		SDL_RenderPresent(renderer);
 	}
@@ -235,7 +244,9 @@ int Engine::BeforePlay() {
 	SDL_RenderClear(renderer);
 	TextureManager::GetInstance()->Draw("bg1", 0, 0, 1280, 720);
 	TextureManager::GetInstance()->Draw("easy", 400, 100, 85, 85);
-	TextureManager::GetInstance()->Draw("normal", 600, 100, 85, 85);
+
+	TextureManager::GetInstance()->Draw("nor", 600, 100, 85, 85);
+
 	TextureManager::GetInstance()->Draw("hard", 800, 100, 85, 85);
 
 	SDL_RenderPresent(renderer);
@@ -248,7 +259,20 @@ int Engine::BeforePlay() {
 		case SDL_MOUSEBUTTONDOWN:
 			if (e.button.button == SDL_BUTTON_LEFT) {
 				if (e.button.x >= 400 && e.button.x <= 485 && e.button.y >= 100 && e.button.y <= 185) {
-					return -1;
+
+					Map::GetInstance(9,9, 0);
+					
+					return 0;
+				}
+				else if (e.button.x >= 600 && e.button.x <= 685 && e.button.y >= 100 && e.button.y <= 185) {
+					Map::GetInstance(12, 14, 2);
+
+					return 0;
+				}
+				else if (e.button.x >= 800 && e.button.x <= 885 && e.button.y >= 100 && e.button.y <= 185) {
+					Map::GetInstance(12, 25, 3);
+					
+					return 0;
 				}
 			}
 			break;
