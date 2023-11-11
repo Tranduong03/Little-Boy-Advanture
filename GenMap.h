@@ -4,6 +4,8 @@
 #include <ctime>
 #include <iostream>
 #include "stdrand.h"
+#include "Engine.h"
+#include "TextureManager.h"
 
 enum {
 	ZERO,
@@ -12,10 +14,10 @@ enum {
 	THREE,
 	FOUR,
 	FIVE,
-    SIX,
-    SEVEN,
-    EIGHT,
-    BOOM
+	SIX,
+	SEVEN,
+	EIGHT,
+	BOOM
 };
 
 struct pixel {
@@ -26,17 +28,33 @@ struct pixel {
 class Map
 {
 private:
-	pixel **map;
+	pixel** map;
 	int cols, rows;
 	int Boom;
+	static Map* CurrentMap;
 public:
+	static Map* GetInstance() {
+		return CurrentMap = (CurrentMap != nullptr) ? CurrentMap : new Map();
+	};
+	static Map* GetInstance(int x, int y, int level) {
+		CurrentMap = nullptr;
+		return CurrentMap = (CurrentMap != nullptr) ? CurrentMap : new Map(x, y, level);
+	}
 	Map();
-	Map(int, int);
-	void setMap(int);	// level
-	int countBoomOnPixel(int, int);	// input: index
-	void printMap(int);	// level
-	int getBoom() { return Boom; };
+	Map(int, int, int);
 	~Map();
+
+	//void NewMap(int, int, int);
+	//void clean();
+
+	void setMap(int);	// level
+
+	int countBoomOnPixel(int, int);	// input: index
+
+	void printMap(int);	// level
+
+	int getBoom() { return Boom; };
+
+	void DrawPixel();
+	
 };
-
-
