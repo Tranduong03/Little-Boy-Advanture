@@ -6,6 +6,17 @@
 #include <vector>
 #include <SDL_image.h>
 #include "TextureManager.h"
+#include "GenMap.h"
+
+#include "stdrand.h"
+
+#define SCR_W 1280
+#define SCR_H 720
+#define PixelSIZE 46
+
+struct position {
+	int x, y;
+};
 
 class Engine
 {
@@ -33,5 +44,4 @@ private:
 	bool isRunning;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-
 };
