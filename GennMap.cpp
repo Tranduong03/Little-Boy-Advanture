@@ -1,5 +1,6 @@
-#include "GenMap.h"
+﻿#include "GenMap.h"
 #include "stdrand.h"
+#include "Engine.h"
 Map* Map::CurrentMap = nullptr;
 
 Map::Map()
@@ -27,48 +28,17 @@ Map::Map(int col, int row, int level)
             }
             else map[i][j].data = -1;
             map[i][j].status = false; // ô chưa được chưa mở
+            map[i][j].isFlag = false;
         }
     }
     
     setMap(level);
 
+    cout << cols << " " << rows << endl;
+
 }
 
-// void Map::NewMap(int col, int rows, int level) {
-//     if (map != nullptr) {
-//         clean();
-//     }
 
-//     map = new pixel * [rows + 2];
-//     for (int i = 0; i <= rows + 1; i++)
-//     {
-//         map[i] = new pixel[cols + 2];
-//         for (int j = 0; j <= cols + 1; j++)
-//         {
-//             if ((i > 0 && j > 0) && (i < rows + 1 && j < cols + 1))
-//             {
-//                 map[i][j].data = 0;
-//             }
-//             else map[i][j].data = -1;
-//             map[i][j].status = false; // ô chưa được chưa mở
-//         }
-//     }
-
-//     setMap(level);
-// }
-// void Map::clean() {
-//     if (map != nullptr) {
-//         for (int i = 0; i <= rows + 1; i++) {
-//             delete[] map[i];
-//         }
-//         delete[] map;
-//     }
-
-//     map = nullptr;
-//     cols = 0;
-//     rows = 0;
-//     Boom = 0;
-// }
 int Map::countBoomOnPixel(int i, int j) {
     int count = 0;
 
@@ -92,7 +62,7 @@ void Map::setMap(int m_level)
     switch (m_level)
     {
     case 0: // Easy
-        Boom = 20;
+        Boom = 10;
         break;
     case 1: // Medium
         Boom = 30;
@@ -159,7 +129,10 @@ void Map::DrawPixel() {
     for (int i = 1; i <= rows; i++) {
         for (int j = 1; j <= cols; j++) {
             if (map[i][j].status == false) {
-                TextureManager::GetInstance()->DrawFrame("pixel", wStart + sizePixel * (i - 1), 10 + sizePixel * (j - 1), 50, 50, 0, 10, sizePixel);
+                if (map[i][j].isFlag == true) {
+                    TextureManager::GetInstance()->DrawFrame("pixel", wStart + sizePixel * (i - 1), 10 + sizePixel * (j - 1), 50, 50, 0, 11, sizePixel);
+                }
+                else TextureManager::GetInstance()->DrawFrame("pixel", wStart + sizePixel * (i - 1), 10 + sizePixel * (j - 1), 50, 50, 0, 10, sizePixel);
             }
             else {
                 switch (map[i][j].data) {
@@ -200,17 +173,67 @@ void Map::DrawPixel() {
     }
 }
 
+void Map::UpdateMap(struct position pos, SDL_Event event) {
+    /*int startX = (SCR_W - PixelSIZE * rows) / 2;
 
-// int main() {
+    int openX = (pos.x - startX) / PixelSIZE +1;
+    int openY = (pos.y - 10) / PixelSIZE +1;
 
-//     int level = 0;
-//     int row = 12, col = 20;
-//     Map m(col, row);
+    if (openX >= 1 && openX <= rows && openY >= 1 && openY <= cols) {
+        if (map[openX][openY].data == 0) OpenCellVal0(openX, openY);
+        else map[openX][openY].status = true;
+    }*/
+    int startX = (SCR_W - PixelSIZE * rows) / 2;
 
-//     m.setMap(level);
+    int openX = (pos.x - startX) / PixelSIZE + 1;
+    int openY = (pos.y - 10) / PixelSIZE + 1;
+    if (event.type == SDL_MOUSEBUTTONDOWN)
+    {
+        if (event.button.button == SDL_BUTTON_LEFT)
+        {
+            if (openX >= 1 && openX <= rows && openY >= 1 && openY <= cols && map[openX][openY].isFlag==false) {
+                if (map[openX][openY].data == 0) OpenCellVal0(openX, openY);
+                else map[openX][openY].status = true;
+            }
 
-//     m.printMap(level);
-//     std::cout << "So boom cua map la: " << m.getBoom();
+        }
+        else if (event.button.button = SDL_BUTTON_RIGHT) {
+            if (openX >= 1 && openX <= rows && openY >= 1 && openY <= cols) {
+                map[openX][openY].isFlag = !map[openX][openY].isFlag;
+            }
+        }
 
-//     return 0;
-// }
+    }
+}
+
+
+
+int Map::CheckMap() {
+
+    int countOpen = 0;
+    for (int i = 1; i <= rows; i++) {
+        for (int j = 1; j <= cols; j++) {
+            if (map[i][j].status == 1) {
+                if (map[i][j].data == 9) return 0;
+                countOpen++;
+            }
+        }
+    }
+    if (countOpen == rows * cols - Boom) return 1;
+    else return 2;
+}
+
+void Map::OpenCellVal0(int x, int y) {
+    if (map[x][y].status==true || map[x][y].isFlag==true) return;
+    else {
+        map[x][y].status = true;
+        if (map[x][y].data != 0) return;
+        for (int i = x - 1; i <= x + 1; i++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+            
+                    OpenCellVal0(i, j);
+                
+            }
+        }
+    }
+}

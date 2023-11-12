@@ -7,7 +7,7 @@
 #include <SDL_image.h>
 #include "TextureManager.h"
 #include "GenMap.h"
-
+#include "SDL_ttf.h"
 #include "stdrand.h"
 
 #define SCR_W 1280
@@ -15,7 +15,8 @@
 #define PixelSIZE 46
 
 struct position {
-	int x, y;
+	int x;
+	int	y;
 };
 
 class Engine
@@ -38,9 +39,13 @@ public:
 	int Input();
 	void Tutorial();
 	int BeforePlay();
+
+	void RenderText(const char*, int, int, TTF_Font*, SDL_Color, int);
+
 private:
 	static Engine* Instance;
 
+	SDL_Event usingEvent;
 	bool isRunning;
 	SDL_Window* window;
 	SDL_Renderer* renderer;

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -23,7 +22,9 @@ enum {
 struct pixel {
 	int data;
 	bool status;
+	bool isFlag;
 };
+
 
 class Map
 {
@@ -32,6 +33,7 @@ private:
 	int cols, rows;
 	int Boom;
 	static Map* CurrentMap;
+
 public:
 	static Map* GetInstance() {
 		return CurrentMap = (CurrentMap != nullptr) ? CurrentMap : new Map();
@@ -56,5 +58,10 @@ public:
 	int getBoom() { return Boom; };
 
 	void DrawPixel();
-	
+
+	void UpdateMap(struct position pos, SDL_Event);
+
+	int CheckMap();
+
+	void OpenCellVal0(int, int);
 };

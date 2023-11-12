@@ -3,6 +3,7 @@
 #include "Engine.h"
 
 
+
 int main(int argc, char* argv[])
 {
     int cur_status = 0;
@@ -19,6 +20,7 @@ int main(int argc, char* argv[])
             if (check == -1) Engine::GetInstance()->Menu();
         }
         while (Engine::GetInstance()->running()) {
+            Engine::GetInstance()->handleEvents();
             Engine::GetInstance()->update();
             Engine::GetInstance()->render();
         }

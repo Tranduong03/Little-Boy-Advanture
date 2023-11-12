@@ -1,9 +1,10 @@
-#include "Engine.h"
+﻿#include "Engine.h"
 #include "TextureManager.h"
 
 SDL_Rect scrR, destR;
 SDL_Texture* Texture;
 int character_x = 0, character_y = 0;
+position mousePos;
 
 Engine* Engine::Instance = nullptr;
 
@@ -18,6 +19,10 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
+		if (TTF_Init() == -1) {
+			std::cerr << "SDL_ttf initialization failed: " << TTF_GetError() << std::endl;
+			return isRunning = false;
+		}
 		std::cout << "Game is Initialised..." << std::endl;
 		// create window
 		window = SDL_CreateWindow(title, x, y, w, h, flag);
@@ -40,6 +45,13 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 		}
 	}
 	else {
+		return isRunning = false;
+	}
+
+	TTF_Font* font = TTF_OpenFont("font/fonts.ttf", 72);
+	if (!font)
+	{
+		std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
 		return isRunning = false;
 	}
 
@@ -72,12 +84,19 @@ void Engine::handleEvents()
 {
 	SDL_Event event;
 	SDL_PollEvent(&event);
+	SDL_Delay(10);
+
+	mousePos = { 0, 0 };
+	
 	if (event.type == SDL_MOUSEBUTTONDOWN)
 	{
+		SDL_GetMouseState(&mousePos.x, &mousePos.y);
 		if (event.button.button == SDL_BUTTON_LEFT)
 		{
-			//Texture = TextureManager::Load_BG("bg/endGame.jpg", renderer);
-			std::cout << event.button.x << " " << event.button.y << endl;
+			
+		}
+		else if (event.button.button = SDL_BUTTON_RIGHT) {
+
 		}
 
 	}
@@ -85,19 +104,36 @@ void Engine::handleEvents()
 	{
 		isRunning = false;
 	}
+	usingEvent = event;
 }
 
 void Engine::update()
 {
-
+	Map::GetInstance()->UpdateMap(mousePos, usingEvent);
+	
 }
 
 void Engine::render()
 {
 	SDL_RenderClear(renderer);
 	Map::GetInstance()->DrawPixel();
+	int stat = Map::GetInstance()->CheckMap();
+	if (stat==0) {
+		TTF_Font* font = TTF_OpenFont("font/fonts.ttf", 72);
+		RenderText("YOU LOSE", 200, 200, font, { 255, 0, 0 }, 72);
+		SDL_RenderPresent(renderer);
+		SDL_Delay(2000);
+		isRunning = false;
+	}
+	else if (stat==1) {
+		TTF_Font* font = TTF_OpenFont("font/fonts.ttf", 72);
+		RenderText("YOU WON", 200, 200, font, { 0, 255, 255 }, 72);
+		SDL_RenderPresent(renderer);
+		SDL_Delay(5000);
+		isRunning = false;
+	}
 	SDL_RenderPresent(renderer);
-
+	
 }
 
 void Engine::clean()
@@ -250,13 +286,14 @@ int Engine::BeforePlay() {
 	TextureManager::GetInstance()->Draw("hard", 800, 100, 85, 85);
 
 	SDL_RenderPresent(renderer);
+	Map::GetInstance();
 
 	SDL_Event e;
-	while (1) {
+	while (isRunning) {
 		SDL_PollEvent(&e);
 		SDL_Delay(10);
 		switch (e.type) {
-		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
 			if (e.button.button == SDL_BUTTON_LEFT) {
 				if (e.button.x >= 400 && e.button.x <= 485 && e.button.y >= 100 && e.button.y <= 185) {
 
@@ -265,8 +302,7 @@ int Engine::BeforePlay() {
 					return 0;
 				}
 				else if (e.button.x >= 600 && e.button.x <= 685 && e.button.y >= 100 && e.button.y <= 185) {
-					Map::GetInstance(12, 14, 2);
-
+					Map::GetInstance(12,16,2);
 					return 0;
 				}
 				else if (e.button.x >= 800 && e.button.x <= 885 && e.button.y >= 100 && e.button.y <= 185) {
@@ -283,4 +319,24 @@ int Engine::BeforePlay() {
 		}
 		SDL_RenderPresent(renderer);
 	}
+}
+
+void Engine::RenderText(const char* text, int x, int y, TTF_Font* font, SDL_Color textColor, int fontSize) {
+	TTF_Font* adjustedFont = TTF_OpenFont("font/fonts.ttf", fontSize);
+	if (!adjustedFont)
+	{
+		std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
+		return;
+	}
+
+	SDL_Surface* textSurface = TTF_RenderText_Solid(adjustedFont, text, textColor);
+	SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+	SDL_Rect destRect = { x, y, textSurface->w, textSurface->h };
+	SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
+
+	// Giải phóng bộ nhớ
+	SDL_FreeSurface(textSurface);
+	SDL_DestroyTexture(textTexture);
+	TTF_CloseFont(adjustedFont);
 }
