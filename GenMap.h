@@ -40,7 +40,7 @@ public:
 	};
 	static Map* GetInstance(int x, int y, int level) {
 		CurrentMap = nullptr;
-		return CurrentMap = (CurrentMap != nullptr) ? CurrentMap : new Map(x, y, level);
+		return CurrentMap = new Map(x, y, level);
 	}
 	Map();
 	Map(int, int, int);
@@ -53,7 +53,7 @@ public:
 
 	int countBoomOnPixel(int, int);	// input: index
 
-	void printMap(int);	// level
+	void printMap();	// level
 
 	int getBoom() { return Boom; };
 

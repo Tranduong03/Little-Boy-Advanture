@@ -6,6 +6,7 @@ SDL_Texture* Texture;
 int character_x = 0, character_y = 0;
 position mousePos;
 
+
 Engine* Engine::Instance = nullptr;
 
 Engine* Engine::GetInstance() {
@@ -76,6 +77,12 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 	TextureManager::GetInstance()->Load("easy", "bg/beforePlay/Easy.jpg");
 	TextureManager::GetInstance()->Load("nor", "bg/beforePlay/Normal.jpg");
 	TextureManager::GetInstance()->Load("hard", "bg/beforePlay/Advanced.jpg");
+
+	TextureManager::GetInstance()->Load("playingBG", "bg/play/playing_bg.jpg");
+	TextureManager::GetInstance()->Load("endBoardBG", "bg/play/khungEnd.jpg");
+	TextureManager::GetInstance()->Load("BoomClick", "bg/play/bomb_active.png");
+	TextureManager::GetInstance()->Load("restart", "bg/play/playagain.png");
+	TextureManager::GetInstance()->Load("home", "bg/play/home.png");
 	//Map::GetInstance(12,25,2);
 
 }
@@ -116,22 +123,19 @@ void Engine::update()
 void Engine::render()
 {
 	SDL_RenderClear(renderer);
+	TextureManager::GetInstance()->Draw("playingBG", 0, 0, 1280, 720);
+
 	Map::GetInstance()->DrawPixel();
-	int stat = Map::GetInstance()->CheckMap();
+	stat = Map::GetInstance()->CheckMap();
 	if (stat==0) {
-		TTF_Font* font = TTF_OpenFont("font/fonts.ttf", 72);
-		RenderText("YOU LOSE", 200, 200, font, { 255, 0, 0 }, 72);
-		SDL_RenderPresent(renderer);
-		SDL_Delay(2000);
+		//Xử lý thua
 		isRunning = false;
 	}
-	else if (stat==1) {
-		TTF_Font* font = TTF_OpenFont("font/fonts.ttf", 72);
-		RenderText("YOU WON", 200, 200, font, { 0, 255, 255 }, 72);
-		SDL_RenderPresent(renderer);
-		SDL_Delay(5000);
+	else if (stat == 1) {
+		//Xử lý win
 		isRunning = false;
 	}
+	
 	SDL_RenderPresent(renderer);
 	
 }
@@ -168,11 +172,15 @@ int Engine::Input() {
 	TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + 80, 200, 43);
 	TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 160, 200, 43);
 
+	SDL_RenderPresent(renderer);
+	cout << "Get Event in Input Now" << endl;
 	SDL_Event e;
+	int m_second = 0;
 	while (isRunning) {
 		SDL_Delay(10);
+		m_second += 10;
+		if (m_second % 1000 == 0) cout << m_second/1000 << "s ";
 		SDL_PollEvent(&e);
-
 		switch (e.type) {
 		case SDL_QUIT:
 			clean();
@@ -198,6 +206,7 @@ int Engine::Input() {
 				{
 					TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 160, 200, 43);
 					clean();
+					exit(0);
 					isRunning = false;
 				}
 			}
@@ -224,7 +233,9 @@ int Engine::Input() {
 					// sound.playMusic(Click, 1);
 					TextureManager::GetInstance()->Draw("quitClick", l_Menu, t_Menu + 160, 200, 43);
 				}
+				cout << "In Input(), mouse Click in:" << e.button.x << " " << e.button.y << endl;
 			}
+
 			break;
 		case SDL_KEYDOWN:
 			if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
@@ -236,6 +247,7 @@ int Engine::Input() {
 		}
 		SDL_RenderPresent(renderer);
 	}
+	cout << "Event khong nhan duoc, xay ra error" << endl;
 }
 
 void Engine::Tutorial() {
@@ -289,7 +301,7 @@ int Engine::BeforePlay() {
 	Map::GetInstance();
 
 	SDL_Event e;
-	while (isRunning) {
+	while (true) {
 		SDL_PollEvent(&e);
 		SDL_Delay(10);
 		switch (e.type) {
@@ -298,16 +310,17 @@ int Engine::BeforePlay() {
 				if (e.button.x >= 400 && e.button.x <= 485 && e.button.y >= 100 && e.button.y <= 185) {
 
 					Map::GetInstance(9,9, 0);
-					
+					stat = 2;
 					return 0;
 				}
 				else if (e.button.x >= 600 && e.button.x <= 685 && e.button.y >= 100 && e.button.y <= 185) {
 					Map::GetInstance(12,16,2);
+					stat = 2;
 					return 0;
 				}
 				else if (e.button.x >= 800 && e.button.x <= 885 && e.button.y >= 100 && e.button.y <= 185) {
 					Map::GetInstance(12, 25, 3);
-					
+					stat = 2;
 					return 0;
 				}
 			}
@@ -339,4 +352,52 @@ void Engine::RenderText(const char* text, int x, int y, TTF_Font* font, SDL_Colo
 	SDL_FreeSurface(textSurface);
 	SDL_DestroyTexture(textTexture);
 	TTF_CloseFont(adjustedFont);
+}
+
+int Engine::FinishGame() {
+	//SDL_RenderClear(renderer);
+
+	TextureManager::GetInstance()->Draw("endBoardBG", 340, 170, 600, 387);
+	TextureManager::GetInstance()->Draw("restart", 496, 380, 64, 64);
+	TextureManager::GetInstance()->Draw("home", 596, 380, 64, 64);
+	TTF_Font* font = TTF_OpenFont("font/fonts.ttf", 72);
+
+	if (stat == 0) {
+		RenderText("YOU LOSE", 450, 250, font, { 255,0,0 }, 72);
+	}
+	else if (stat == 1) {
+		RenderText("YOU WON", 430, 250, font, { 0,255,255 }, 72);
+	}
+
+	
+
+	SDL_Event e;
+	while (true) {
+		SDL_PollEvent(&e);
+		SDL_Delay(10);
+		if (e.type == SDL_MOUSEBUTTONUP)
+		{
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				if (e.button.x >= 496 && e.button.x <= 560 && e.button.y >= 380 && e.button.y <= 444) {
+					
+					return 2;
+					break;
+				}
+				else if (e.button.x >= 596 && e.button.x <= 640 && e.button.y >= 380 && e.button.y <= 444) {
+					return 1;
+					break;
+				}
+			}
+			cout << e.button.x << " " << e.button.y << endl;
+		
+		}
+
+		else if (e.type == SDL_QUIT)
+		{
+			return 0;
+			break;
+		}
+		SDL_RenderPresent(renderer);
+	}
 }

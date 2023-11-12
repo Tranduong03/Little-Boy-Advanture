@@ -40,11 +40,14 @@ public:
 	void Tutorial();
 	int BeforePlay();
 
+	int FinishGame();
+
 	void RenderText(const char*, int, int, TTF_Font*, SDL_Color, int);
 
+	void restart() { isRunning = 1; }
 private:
 	static Engine* Instance;
-
+	int stat = 0;
 	SDL_Event usingEvent;
 	bool isRunning;
 	SDL_Window* window;

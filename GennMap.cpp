@@ -100,18 +100,18 @@ void Map::setMap(int m_level)
     }
 }
 
-void Map::printMap(int m_level)
+void Map::printMap()
 {
-    Boom = 0;
     for (int i = 1; i < rows + 1; i++)
     {
         for (int j = 1; j < cols + 1; j++)
         {
-            if (map[i][j].data == BOOM) Boom++;
             std::cout << map[i][j].data << " ";
+
         }
         std::cout << std::endl;
     }
+
 }
 
 Map::~Map()
