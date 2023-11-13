@@ -9,6 +9,7 @@
 #include "GenMap.h"
 #include "SDL_ttf.h"
 #include "stdrand.h"
+#include <sstream>
 
 #define SCR_W 1280
 #define SCR_H 720
@@ -42,7 +43,7 @@ public:
 
 	int FinishGame();
 
-	void RenderText(const char*, int, int, TTF_Font*, SDL_Color, int);
+	void RenderText(const char*, int, int, SDL_Color, int);
 
 	void restart() { isRunning = 1; }
 private:

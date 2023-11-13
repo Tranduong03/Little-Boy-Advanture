@@ -55,7 +55,7 @@ public:
 
 	void printMap();	// level
 
-	int getBoom() { return Boom; };
+	int getBoom();
 
 	void DrawPixel();
 
@@ -64,4 +64,14 @@ public:
 	int CheckMap();
 
 	void OpenCellVal0(int, int);
+
+	void MapWinOpen();
+
+	void MapLoseOpen();
+
+	int getRows() { return rows; }
+
+	struct position getcell_locate(int, int);// l?y v? trí ô t? v? trí chu?t
+
+	int score();
 };

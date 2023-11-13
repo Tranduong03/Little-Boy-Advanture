@@ -71,7 +71,7 @@ void Map::setMap(int m_level)
         Boom = 35;
         break;
     case 3: // Try Hard
-        Boom = 50;
+        Boom = 60;
         break;
     }
     /*Đặt boom*/
@@ -236,4 +236,49 @@ void Map::OpenCellVal0(int x, int y) {
             }
         }
     }
+}
+
+void Map::MapWinOpen() {
+    for (int i = 1; i <= rows; i++) {
+        for (int j = 1; j <= cols; j++) {
+            map[i][j].status = 1;
+        }
+    }
+    
+}
+
+void Map::MapLoseOpen() {
+    
+    for (int i = 1; i <= rows; i++) {
+        for (int j = 1; j <= cols; j++) {
+            if (map[i][j].data == 9) map[i][j].status = true;
+        }
+    }
+    
+}
+
+struct position Map::getcell_locate(int x, int y) {
+    struct position locate = { (x - (SCR_W - PixelSIZE * rows) / 2) / PixelSIZE,(y - 10) / PixelSIZE };
+    return locate;
+}
+
+int Map::score()
+{
+    int point = 0;
+    for (int i = 1; i <= rows; i++) {
+        for (int j = 1; j <= cols; j++) {
+            if (map[i][j].status == true) point+=map[i][j].data+1;
+        }
+    }
+    return point;
+}
+
+int Map::getBoom() {
+    int cur_boom = Boom;
+    for (int i = 1; i <= rows; i++) {
+        for (int j = 1; j <= cols; j++) {
+            if (map[i][j].isFlag == 1 && cur_boom > 0) cur_boom--;
+        }
+    }
+    return cur_boom;
 }

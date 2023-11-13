@@ -5,7 +5,7 @@ SDL_Rect scrR, destR;
 SDL_Texture* Texture;
 int character_x = 0, character_y = 0;
 position mousePos;
-
+int cur_Score, time_elapsed;
 
 Engine* Engine::Instance = nullptr;
 
@@ -98,13 +98,7 @@ void Engine::handleEvents()
 	if (event.type == SDL_MOUSEBUTTONDOWN)
 	{
 		SDL_GetMouseState(&mousePos.x, &mousePos.y);
-		if (event.button.button == SDL_BUTTON_LEFT)
-		{
-			
-		}
-		else if (event.button.button = SDL_BUTTON_RIGHT) {
-
-		}
+		
 
 	}
 	else if (event.type == SDL_QUIT)
@@ -112,12 +106,13 @@ void Engine::handleEvents()
 		isRunning = false;
 	}
 	usingEvent = event;
+	time_elapsed += 10;
 }
 
 void Engine::update()
 {
 	Map::GetInstance()->UpdateMap(mousePos, usingEvent);
-	
+	cur_Score = Map::GetInstance()->score();
 }
 
 void Engine::render()
@@ -125,14 +120,42 @@ void Engine::render()
 	SDL_RenderClear(renderer);
 	TextureManager::GetInstance()->Draw("playingBG", 0, 0, 1280, 720);
 
+	stringstream ss, s_mine, s_time;
+	ss << cur_Score;
+	string score = "Score:" + ss.str();
+	RenderText(score.c_str(), 250, 640, { 255,255,0 }, 48 );
+
+	int boom = Map::GetInstance()->getBoom();
+	s_mine << boom;
+	TextureManager::GetInstance()->DrawFrame("pixel", 1050, 640, 50, 50, 0, 9, 50);
+	string mine = s_mine.str();
+	RenderText(mine.c_str(), 1120, 641, { 255,255,0 }, 48);
+
+	
+	s_time << time_elapsed / 500;
+	string time = "Time:" + s_time.str();
+	RenderText(time.c_str(), 700, 640, { 255,255,0 }, 48);
+
+
 	Map::GetInstance()->DrawPixel();
 	stat = Map::GetInstance()->CheckMap();
 	if (stat==0) {
 		//Xử lý thua
+		position BoomAct = Map::GetInstance()->getcell_locate(mousePos.x, mousePos.y);
+		Map::GetInstance()->MapLoseOpen();
+		Map::GetInstance()->DrawPixel();
+		int rows = Map::GetInstance()->getRows();
+		TextureManager::GetInstance()->DrawFrame("BoomClick", (SCR_W - PixelSIZE * rows) / 2 + PixelSIZE * (BoomAct.x), 10 + PixelSIZE * (BoomAct.y), 162, 162, 0, 0, PixelSIZE);
+		SDL_RenderPresent(renderer);
+		SDL_Delay(2500);
 		isRunning = false;
 	}
 	else if (stat == 1) {
 		//Xử lý win
+		Map::GetInstance()->MapWinOpen();
+		Map::GetInstance()->DrawPixel();
+		SDL_RenderPresent(renderer);
+		SDL_Delay(2500);
 		isRunning = false;
 	}
 	
@@ -299,6 +322,8 @@ int Engine::BeforePlay() {
 
 	SDL_RenderPresent(renderer);
 	Map::GetInstance();
+	cur_Score = 0;
+	time_elapsed = 0;
 
 	SDL_Event e;
 	while (true) {
@@ -314,7 +339,7 @@ int Engine::BeforePlay() {
 					return 0;
 				}
 				else if (e.button.x >= 600 && e.button.x <= 685 && e.button.y >= 100 && e.button.y <= 185) {
-					Map::GetInstance(12,16,2);
+					Map::GetInstance(12,16,1);
 					stat = 2;
 					return 0;
 				}
@@ -334,7 +359,7 @@ int Engine::BeforePlay() {
 	}
 }
 
-void Engine::RenderText(const char* text, int x, int y, TTF_Font* font, SDL_Color textColor, int fontSize) {
+void Engine::RenderText(const char* text, int x, int y, SDL_Color textColor, int fontSize) {
 	TTF_Font* adjustedFont = TTF_OpenFont("font/fonts.ttf", fontSize);
 	if (!adjustedFont)
 	{
@@ -356,20 +381,24 @@ void Engine::RenderText(const char* text, int x, int y, TTF_Font* font, SDL_Colo
 
 int Engine::FinishGame() {
 	//SDL_RenderClear(renderer);
+	stringstream ss,s_time;
+	ss << cur_Score;
+	s_time << time_elapsed/500;
+	string score = "Score:"+ss.str();
+	string time = "Time:" + s_time.str();
 
 	TextureManager::GetInstance()->Draw("endBoardBG", 340, 170, 600, 387);
 	TextureManager::GetInstance()->Draw("restart", 496, 380, 64, 64);
 	TextureManager::GetInstance()->Draw("home", 596, 380, 64, 64);
-	TTF_Font* font = TTF_OpenFont("font/fonts.ttf", 72);
 
 	if (stat == 0) {
-		RenderText("YOU LOSE", 450, 250, font, { 255,0,0 }, 72);
+		RenderText("YOU LOSE", 450, 250, { 255,0,0 }, 72);
 	}
 	else if (stat == 1) {
-		RenderText("YOU WON", 430, 250, font, { 0,255,255 }, 72);
+		RenderText("YOU WON", 430, 250, { 0,255,255 }, 72);
 	}
-
-	
+	RenderText(score.c_str(), 420, 330, { 0,0,255 }, 36);
+	RenderText(time.c_str(), 700, 330, { 0,0,255 }, 36);
 
 	SDL_Event e;
 	while (true) {
@@ -392,6 +421,14 @@ int Engine::FinishGame() {
 			cout << e.button.x << " " << e.button.y << endl;
 		
 		}
+		/*else if (e.type == SDL_MOUSEMOTION) {
+			if (e.button.x >= 496 && e.button.x <= 560 && e.button.y >= 380 && e.button.y <= 444) {
+				RenderText("Restart", 600, 460, { 240,160,80 }, 36);
+			}
+			else if (e.button.x >= 596 && e.button.x <= 640 && e.button.y >= 380 && e.button.y <= 444) {
+				RenderText("Main Menu", 590, 460, { 240,160,80 }, 36);
+			}
+		}*/
 
 		else if (e.type == SDL_QUIT)
 		{
