@@ -1,11 +1,17 @@
 ﻿#include "Engine.h"
-#include "TextureManager.h"
+#include <fstream>
+
+using namespace std;
 
 SDL_Rect scrR, destR;
 SDL_Texture* Texture;
-int character_x = 0, character_y = 0;
+
 position mousePos;
+
 int cur_Score, time_elapsed;
+string name = "";
+
+File List;
 
 Engine* Engine::Instance = nullptr;
 
@@ -57,7 +63,7 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 	}
 
 	TextureManager::GetInstance()->Load("bg1", "bg/login0.png");
-	TextureManager::GetInstance()->Load("bg2", "bg/endGame.jpg");
+	TextureManager::GetInstance()->Load("bg2", "bg/score.jpg");
 
 	TextureManager::GetInstance()->Load("quit", "bg/quit.png");
 	TextureManager::GetInstance()->Load("quitClick", "bg/quitClick.png");
@@ -68,23 +74,33 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 	TextureManager::GetInstance()->Load("tutorial", "bg/tutorial.png");
 	TextureManager::GetInstance()->Load("tutorialClick", "bg/tutorialClick.png");
 
+	TextureManager::GetInstance()->Load("score", "bg/score.png");
+	TextureManager::GetInstance()->Load("scoreClick", "bg/scoreClick.png");
+
 	TextureManager::GetInstance()->Load("BACK", "bg/backIcon.png");
 	TextureManager::GetInstance()->Load("BACKClick", "bg/backIconClick.png");
-	TextureManager::GetInstance()->Load("tutorialScreen", "bg/TUTORIALSCR.png");
+	TextureManager::GetInstance()->Load("tutorialScreen", "images/TUTORIALSCR.png");
 
-	TextureManager::GetInstance()->Load("pixel", "bg/play/pixel.jpg");
+	TextureManager::GetInstance()->Load("pixel", "images/pixel.jpg");
 
-	TextureManager::GetInstance()->Load("easy", "bg/beforePlay/Easy.jpg");
-	TextureManager::GetInstance()->Load("nor", "bg/beforePlay/Normal.jpg");
-	TextureManager::GetInstance()->Load("hard", "bg/beforePlay/Advanced.jpg");
+	TextureManager::GetInstance()->Load("easy", "bg/beforePlay/Easy.png");
+	TextureManager::GetInstance()->Load("nor", "bg/beforePlay/normal.png");
+	TextureManager::GetInstance()->Load("hard", "bg/beforePlay/hard.png");
 
-	TextureManager::GetInstance()->Load("playingBG", "bg/play/playing_bg.jpg");
-	TextureManager::GetInstance()->Load("endBoardBG", "bg/play/khungEnd.jpg");
-	TextureManager::GetInstance()->Load("BoomClick", "bg/play/bomb_active.png");
+	TextureManager::GetInstance()->Load("playingBG", "images/playing_bg.jpg");
+	TextureManager::GetInstance()->Load("endBoardBG", "images/khungEnd.jpg");
+	TextureManager::GetInstance()->Load("BoomClick", "images/bomb_active.png");
+
 	TextureManager::GetInstance()->Load("restart", "bg/play/playagain.png");
 	TextureManager::GetInstance()->Load("home", "bg/play/home.png");
-	//Map::GetInstance(12,25,2);
 
+	TextureManager::GetInstance()->Load("chooseArrow", "bg/choose_arrow.png");
+	TextureManager::GetInstance()->Load("chooseArrow2", "bg/choose_arrow2.png");
+
+	TextureManager::GetInstance()->Load("inNameBG", "bg/InputName.png");
+	TextureManager::GetInstance()->Load("enter", "bg/ENTER.png");
+	TextureManager::GetInstance()->Load("enterClick", "bg/enterClick.png");
+	return true;
 }
 
 void Engine::handleEvents()
@@ -98,15 +114,20 @@ void Engine::handleEvents()
 	if (event.type == SDL_MOUSEBUTTONDOWN)
 	{
 		SDL_GetMouseState(&mousePos.x, &mousePos.y);
-		
-
 	}
 	else if (event.type == SDL_QUIT)
 	{
 		isRunning = false;
+		clean();
+		exit(0);
 	}
 	usingEvent = event;
 	time_elapsed += 10;
+}
+
+void Engine::restart()
+{
+	isRunning = true;
 }
 
 void Engine::update()
@@ -136,7 +157,6 @@ void Engine::render()
 	string time = "Time:" + s_time.str();
 	RenderText(time.c_str(), 700, 640, { 255,255,0 }, 48);
 
-
 	Map::GetInstance()->DrawPixel();
 	stat = Map::GetInstance()->CheckMap();
 	if (stat==0) {
@@ -147,7 +167,7 @@ void Engine::render()
 		int rows = Map::GetInstance()->getRows();
 		TextureManager::GetInstance()->DrawFrame("BoomClick", (SCR_W - PixelSIZE * rows) / 2 + PixelSIZE * (BoomAct.x), 10 + PixelSIZE * (BoomAct.y), 162, 162, 0, 0, PixelSIZE);
 		SDL_RenderPresent(renderer);
-		SDL_Delay(2500);
+		SDL_Delay(1500);
 		isRunning = false;
 	}
 	else if (stat == 1) {
@@ -155,7 +175,7 @@ void Engine::render()
 		Map::GetInstance()->MapWinOpen();
 		Map::GetInstance()->DrawPixel();
 		SDL_RenderPresent(renderer);
-		SDL_Delay(2500);
+		SDL_Delay(1500);
 		isRunning = false;
 	}
 	
@@ -178,8 +198,14 @@ void Engine::Menu() {
 	int check = Input();
 	while (check != 0) 
 	{
-		if (check == 1) {
+		if (check == 1) 
+		{
 			Tutorial();
+		}
+		else if (check == 2)
+		{
+			Score();
+			cout << "Menu Score" << endl;
 		}
 		check = Input();
 	}
@@ -189,11 +215,13 @@ int Engine::Input() {
 	SDL_RenderClear(renderer);
 	TextureManager::GetInstance()->Draw("bg1", 0, 0, 1280, 720);
 
-	int l_Menu = 300, t_Menu = 240;
+	int l_Menu = 190, t_Menu = 150, size = 109;
+	int s_x = 169, s_y = 89;
 
-	TextureManager::GetInstance()->Draw("play", l_Menu, t_Menu, 200, 43);
-	TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + 80, 200, 43);
-	TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 160, 200, 43);
+	TextureManager::GetInstance()->Draw("play", l_Menu, t_Menu, s_x, s_y);
+	TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + size, s_x, s_y);
+	TextureManager::GetInstance()->Draw("score", l_Menu, t_Menu + 2*size, s_x, s_y);
+	TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 3*size, s_x, s_y);
 
 	SDL_RenderPresent(renderer);
 	cout << "Get Event in Input Now" << endl;
@@ -201,8 +229,6 @@ int Engine::Input() {
 	int m_second = 0;
 	while (isRunning) {
 		SDL_Delay(10);
-		m_second += 10;
-		if (m_second % 1000 == 0) cout << m_second/1000 << "s ";
 		SDL_PollEvent(&e);
 		switch (e.type) {
 		case SDL_QUIT:
@@ -210,22 +236,28 @@ int Engine::Input() {
 			isRunning = false;
 			return 0;
 		case SDL_MOUSEBUTTONUP:
-
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				// play game
-				if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu && e.button.y <= t_Menu + 43)
+				if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu && e.button.y <= t_Menu + 90)
 				{
 					TextureManager::GetInstance()->Draw("play", l_Menu, t_Menu, 200, 43);
-					return BeforePlay();
+					//return BeforePlay();
+					return InputName();
 				}
 				// tutorial
-				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 80 && e.button.y <= t_Menu + 123)
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + size && e.button.y <= t_Menu + size + 90)
 				{
-					TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + 160, 200, 43);
+					TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + 80, 200, 43);
 					return 1;
 				}
-				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 160 && e.button.y <= t_Menu + 203) 
+				// score
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 2*size && e.button.y <= t_Menu + 2*size + 90)
+				{
+					return 2;
+				}
+				// quit
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 3 * size && e.button.y <= t_Menu + 3 * size + 90)
 				{
 					TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 160, 200, 43);
 					clean();
@@ -233,7 +265,27 @@ int Engine::Input() {
 					isRunning = false;
 				}
 			}
-			break;
+		case SDL_MOUSEMOTION:
+			if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu && e.button.y <= t_Menu + 90)
+			{
+				TextureManager::GetInstance()->Draw("playClick", l_Menu, t_Menu, s_x, s_y);
+			}
+			else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + size && e.button.y <= t_Menu + size + 90) {
+				TextureManager::GetInstance()->Draw("tutorialClick", l_Menu, t_Menu + size, s_x, s_y);
+			}
+			else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 2 * size && e.button.y <= t_Menu + 2 * size + 90) {
+				TextureManager::GetInstance()->Draw("scoreClick", l_Menu, t_Menu + 2 * size, s_x, s_y);
+			}
+			else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 3 * size && e.button.y <= t_Menu + 3 * size + 90) {
+				TextureManager::GetInstance()->Draw("quitClick", l_Menu, t_Menu + 3 * size, s_x, s_y);
+			}
+			else {
+				TextureManager::GetInstance()->Draw("bg1", 0, 0, 1280, 720);
+				TextureManager::GetInstance()->Draw("play", l_Menu, t_Menu, s_x, s_y);
+				TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + size, s_x, s_y);
+				TextureManager::GetInstance()->Draw("score", l_Menu, t_Menu + 2 * size, s_x, s_y);
+				TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 3 * size, s_x, s_y);
+			}
 		case SDL_MOUSEBUTTONDOWN:
 
 			if (e.button.button == SDL_BUTTON_LEFT) 
@@ -250,11 +302,15 @@ int Engine::Input() {
 					// sound.playMusic(Click, 1);
 					TextureManager::GetInstance()->Draw("tutorialClick", l_Menu, t_Menu + 80, 200, 43);
 				}
-				// quit
-				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 160 && e.button.y <= t_Menu + 203) 
+				// score
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 160 && e.button.y <= t_Menu + 203)
 				{
-					// sound.playMusic(Click, 1);
-					TextureManager::GetInstance()->Draw("quitClick", l_Menu, t_Menu + 160, 200, 43);
+					TextureManager::GetInstance()->Draw("scoreClick", l_Menu, t_Menu + 160, 200, 43);
+				}
+				// quit
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 3*size && e.button.y <= t_Menu + 3*size + 90) 
+				{
+					TextureManager::GetInstance()->Draw("quitClick", l_Menu, t_Menu + 3 * size, s_x, s_y);
 				}
 				cout << "In Input(), mouse Click in:" << e.button.x << " " << e.button.y << endl;
 			}
@@ -273,7 +329,8 @@ int Engine::Input() {
 	cout << "Event khong nhan duoc, xay ra error" << endl;
 }
 
-void Engine::Tutorial() {
+void Engine::Tutorial() 
+{
 	SDL_RenderClear(renderer);
 
 	TextureManager::GetInstance()->Draw("tutorialScreen", 0, 0, 1280, 720);
@@ -305,7 +362,63 @@ void Engine::Tutorial() {
 			clean();
 			TextureManager::GetInstance()->Clean();
 			isRunning = false;
+			clean();
+			exit(0);
 			return;
+		}
+		SDL_RenderPresent(renderer);
+	}
+}
+
+void Engine::Score()
+{
+	SDL_RenderClear(renderer);
+
+	cout << "Score" << endl;
+	TextureManager::GetInstance()->Draw("bg2", 0, 0, 1280, 720);
+	TextureManager::GetInstance()->Draw("BACK", 1180, 20, 70, 70);
+
+	Read_Score();
+
+	SDL_Event e;
+	while (1) {
+
+		Node* i = List.Head();
+		
+		for (int count = 0; count < 20; count++)
+		{
+			RenderText2(i->name.c_str(), 100, count*20 + 50, { 255, 50, 0 }, 30);
+			string s_score = to_string(i->score);
+			RenderText2(s_score.c_str(), 300, count*20 + 50, {255, 50, 0}, 20);
+			i = i->next;
+		}
+
+		SDL_PollEvent(&e);
+		SDL_Delay(10);
+		switch (e.type) {
+		case SDL_MOUSEBUTTONDOWN:
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				if (e.button.x >= 1180 && e.button.x <= 1260 && e.button.y >= 20 && e.button.y <= 100) {
+					TextureManager::GetInstance()->Draw("BACKClick", 1180, 20, 70, 70);
+					// return;
+				}
+			}
+			break;
+		case SDL_MOUSEBUTTONUP:
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				if (e.button.x >= 1180 && e.button.x <= 1260 && e.button.y >= 20 && e.button.y <= 100) {
+					return;
+				}
+			}
+			break;
+		case SDL_QUIT:
+			clean();
+			TextureManager::GetInstance()->Clean();
+			isRunning = false;
+			clean();
+			exit(0);
 		}
 		SDL_RenderPresent(renderer);
 	}
@@ -314,11 +427,11 @@ void Engine::Tutorial() {
 int Engine::BeforePlay() {
 	SDL_RenderClear(renderer);
 	TextureManager::GetInstance()->Draw("bg1", 0, 0, 1280, 720);
-	TextureManager::GetInstance()->Draw("easy", 400, 100, 85, 85);
+	TextureManager::GetInstance()->Draw("easy", 400, 100, 162, 85);
 
-	TextureManager::GetInstance()->Draw("nor", 600, 100, 85, 85);
+	TextureManager::GetInstance()->Draw("nor", 600, 100, 141, 85);
 
-	TextureManager::GetInstance()->Draw("hard", 800, 100, 85, 85);
+	TextureManager::GetInstance()->Draw("hard", 800, 100, 167, 85);
 
 	SDL_RenderPresent(renderer);
 	Map::GetInstance();
@@ -332,18 +445,17 @@ int Engine::BeforePlay() {
 		switch (e.type) {
 		case SDL_MOUSEBUTTONUP:
 			if (e.button.button == SDL_BUTTON_LEFT) {
-				if (e.button.x >= 400 && e.button.x <= 485 && e.button.y >= 100 && e.button.y <= 185) {
-
+				if (e.button.x >= 400 && e.button.x <= 562 && e.button.y >= 100 && e.button.y <= 185) {
 					Map::GetInstance(9,9, 0);
 					stat = 2;
 					return 0;
 				}
-				else if (e.button.x >= 600 && e.button.x <= 685 && e.button.y >= 100 && e.button.y <= 185) {
+				else if (e.button.x >= 600 && e.button.x <= 741 && e.button.y >= 100 && e.button.y <= 185) {
 					Map::GetInstance(12,16,1);
 					stat = 2;
 					return 0;
 				}
-				else if (e.button.x >= 800 && e.button.x <= 885 && e.button.y >= 100 && e.button.y <= 185) {
+				else if (e.button.x >= 800 && e.button.x <= 967 && e.button.y >= 100 && e.button.y <= 185) {
 					Map::GetInstance(12, 25, 3);
 					stat = 2;
 					return 0;
@@ -379,17 +491,37 @@ void Engine::RenderText(const char* text, int x, int y, SDL_Color textColor, int
 	TTF_CloseFont(adjustedFont);
 }
 
+void Engine::RenderText2(const char* text, int x, int y, SDL_Color textColor, int fontSize) {
+	TTF_Font* adjustedFont = TTF_OpenFont("font/m5x7.ttf", fontSize);
+	if (!adjustedFont)
+	{
+		cerr << "Failed to load font: " << TTF_GetError() << endl;
+		return;
+	}
+
+	SDL_Surface* textSurface = TTF_RenderText_Solid(adjustedFont, text, textColor);
+	SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+	SDL_Rect destRect = { x, y, textSurface->w, textSurface->h };
+	SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
+
+	// Giải phóng bộ nhớ
+	SDL_FreeSurface(textSurface);
+	SDL_DestroyTexture(textTexture);
+	TTF_CloseFont(adjustedFont);
+}
+
 int Engine::FinishGame() {
-	//SDL_RenderClear(renderer);
+
 	stringstream ss,s_time;
 	ss << cur_Score;
-	s_time << time_elapsed/500;
+	s_time << time_elapsed/1000;
 	string score = "Score:"+ss.str();
 	string time = "Time:" + s_time.str();
 
 	TextureManager::GetInstance()->Draw("endBoardBG", 340, 170, 600, 387);
-	TextureManager::GetInstance()->Draw("restart", 496, 380, 64, 64);
-	TextureManager::GetInstance()->Draw("home", 596, 380, 64, 64);
+	TextureManager::GetInstance()->Draw("restart", 526, 380, 87, 64);
+	TextureManager::GetInstance()->Draw("home", 680, 380, 79, 64);
 
 	if (stat == 0) {
 		RenderText("YOU LOSE", 450, 250, { 255,0,0 }, 72);
@@ -408,33 +540,138 @@ int Engine::FinishGame() {
 		{
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
-				if (e.button.x >= 496 && e.button.x <= 560 && e.button.y >= 380 && e.button.y <= 444) {
-					
+				if (e.button.x >= 525 && e.button.x <= 610 && e.button.y >= 380 && e.button.y <= 444) 
+				{
 					return 2;
 					break;
 				}
-				else if (e.button.x >= 596 && e.button.x <= 640 && e.button.y >= 380 && e.button.y <= 444) {
+				else if (e.button.x >= 675 && e.button.x <= 760 && e.button.y >= 380 && e.button.y <= 444) 
+				{
 					return 1;
 					break;
 				}
 			}
-			cout << e.button.x << " " << e.button.y << endl;
-		
 		}
-		/*else if (e.type == SDL_MOUSEMOTION) {
-			if (e.button.x >= 496 && e.button.x <= 560 && e.button.y >= 380 && e.button.y <= 444) {
-				RenderText("Restart", 600, 460, { 240,160,80 }, 36);
+		else if (e.type == SDL_MOUSEMOTION) {
+			if (e.button.x >= 520 && e.button.x <= 610 && e.button.y >= 380 && e.button.y <= 444) {
+				RenderText("[Restart]", 555, 460, { 255,255,0 }, 36);
 			}
-			else if (e.button.x >= 596 && e.button.x <= 640 && e.button.y >= 380 && e.button.y <= 444) {
-				RenderText("Main Menu", 590, 460, { 240,160,80 }, 36);
+			else if (e.button.x >= 675 && e.button.x <= 760 && e.button.y >= 380 && e.button.y <= 444) {
+				RenderText("[Main Menu]", 525, 460, { 255,255,0 }, 36);
 			}
-		}*/
+			else {
+				TextureManager::GetInstance()->Draw("endBoardBG", 340, 170, 600, 387);
+				TextureManager::GetInstance()->Draw("restart", 526, 380, 87, 64);
+				TextureManager::GetInstance()->Draw("home", 680, 380, 79, 64);
 
+				if (stat == 0) {
+					RenderText("YOU LOSE", 450, 250, { 255,0,0 }, 80);
+				}
+				else if (stat == 1) {
+					RenderText("YOU WON", 430, 250, { 0,255,255 }, 80);
+				}
+				RenderText(score.c_str(), 420, 330, { 0,0,255 }, 36);
+				RenderText(time.c_str(), 700, 330, { 0,0,255 }, 36);
+			}
+		}
 		else if (e.type == SDL_QUIT)
 		{
-			return 0;
+			clean();
+			exit(0);
 			break;
 		}
 		SDL_RenderPresent(renderer);
 	}
 }
+
+int Engine::InputName() {
+	name = "Name Player";
+
+	TextureManager::GetInstance()->Draw("enter", 565, 300, 150, 60);
+	SDL_Event ev;
+	SDL_StartTextInput();
+
+	while (running()) {
+		SDL_Delay(10);
+		SDL_PollEvent(&ev);
+
+		switch (ev.type)
+		{
+		case SDL_QUIT:
+			exit(0);
+			break;
+		case SDL_KEYDOWN:
+		case SDL_TEXTINPUT:
+			if (ev.key.keysym.scancode == SDL_SCANCODE_BACKSPACE && name.length() > 0)
+			{
+				name = name.substr(0, name.length() - 1);
+			}
+			else if (ev.type == SDL_TEXTINPUT)
+			{
+				if (name.length() <= 12)
+				{
+					name += ev.text.text;
+				}
+			}
+			else if (ev.key.keysym.scancode == SDL_SCANCODE_RETURN)
+			{
+				SDL_StopTextInput();
+
+				if (name.compare("") == 0) name = "Name Player";
+				return BeforePlay();
+			}
+
+			break;
+		case SDL_MOUSEBUTTONUP:
+			if (ev.button.button == SDL_BUTTON_LEFT)
+			{
+				if (ev.button.x >= 565 && ev.button.x <= 715 &&
+					ev.button.y >= 270 && ev.button.y <= 320)
+				{
+					TextureManager::GetInstance()->Draw("enterClick", 565, 270, 150, 60);
+					SDL_RenderPresent(renderer);
+					SDL_StopTextInput();
+					if (name.compare("") == 0) name = "Name Player";
+
+					return BeforePlay();
+				}
+			}
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			if (ev.button.button == SDL_BUTTON_LEFT)
+			{
+				if (ev.button.x >= 565 && ev.button.x <= 715 &&
+					ev.button.y >= 270 && ev.button.y <= 320)
+				{
+					TextureManager::GetInstance()->Draw("enterClick", 565, 270, 150, 60);
+					SDL_RenderPresent(renderer);
+				}
+			}
+			break;
+		}
+		string name_out = " " + name;	// vì hàm RenderText bị lỗi khi in xâu rỗng
+		SDL_RenderClear(renderer);
+		TextureManager::GetInstance()->Draw("inNameBG", 0, 0, 1280, 720);
+		TextureManager::GetInstance()->Draw("enter", 565, 270, 150, 60);
+		RenderText(name_out.c_str(), 530, 200, {238,0,0,255}, 30);
+		SDL_RenderPresent(renderer);
+	}
+}
+
+void Engine::Output_Score()
+{
+	ofstream outfile;
+	outfile.open("output.txt", ios_base::app);
+	// outfile << name << " " << cur_Score << " " << time_elapsed << endl;
+	outfile << cur_Score << " " << name << endl;
+	outfile.close();
+	List.addNode(cur_Score, name);
+	List.write();
+}
+
+void Engine::Read_Score()
+{
+	List.read();
+	List.write();
+}
+
