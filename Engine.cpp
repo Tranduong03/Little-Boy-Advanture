@@ -94,12 +94,12 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 	TextureManager::GetInstance()->Load("restart", "bg/play/playagain.png");
 	TextureManager::GetInstance()->Load("home", "bg/play/home.png");
 
-	TextureManager::GetInstance()->Load("chooseArrow", "bg/choose_arrow.png");
-	TextureManager::GetInstance()->Load("chooseArrow2", "bg/choose_arrow2.png");
-
 	TextureManager::GetInstance()->Load("inNameBG", "bg/InputName.png");
 	TextureManager::GetInstance()->Load("enter", "bg/ENTER.png");
 	TextureManager::GetInstance()->Load("enterClick", "bg/enterClick.png");
+
+	TextureManager::GetInstance()->Load("Champion", "bg/champion.png");
+
 	return true;
 }
 
@@ -241,25 +241,26 @@ int Engine::Input() {
 				// play game
 				if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu && e.button.y <= t_Menu + 90)
 				{
-					TextureManager::GetInstance()->Draw("play", l_Menu, t_Menu, 200, 43);
+					TextureManager::GetInstance()->Draw("play", l_Menu, t_Menu, s_x, s_y);
 					//return BeforePlay();
 					return InputName();
 				}
 				// tutorial
 				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + size && e.button.y <= t_Menu + size + 90)
 				{
-					TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + 80, 200, 43);
+					TextureManager::GetInstance()->Draw("tutorial", l_Menu, t_Menu + size, s_x, s_y);
 					return 1;
 				}
 				// score
 				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 2*size && e.button.y <= t_Menu + 2*size + 90)
 				{
+					TextureManager::GetInstance()->Draw("score", l_Menu, t_Menu + 2 * size, s_x, s_y);
 					return 2;
 				}
 				// quit
 				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 3 * size && e.button.y <= t_Menu + 3 * size + 90)
 				{
-					TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 160, 200, 43);
+					TextureManager::GetInstance()->Draw("quit", l_Menu, t_Menu + 3 * size, s_x, s_y);
 					clean();
 					exit(0);
 					isRunning = false;
@@ -291,24 +292,24 @@ int Engine::Input() {
 			if (e.button.button == SDL_BUTTON_LEFT) 
 			{
 				// play game
-				if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu && e.button.y <= t_Menu + 43) 
+				if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu && e.button.y <= t_Menu + 90)
 				{
 					// sound.playMusic(Click, 1);
-					TextureManager::GetInstance()->Draw("playClick", l_Menu, t_Menu, 200, 43);
+					TextureManager::GetInstance()->Draw("playClick", l_Menu, t_Menu, s_x, s_y);
 				}
 				// tutorial
-				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 80 && e.button.y <= t_Menu + 123) 
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + size && e.button.y <= t_Menu + size + 90)
 				{
 					// sound.playMusic(Click, 1);
-					TextureManager::GetInstance()->Draw("tutorialClick", l_Menu, t_Menu + 80, 200, 43);
+					TextureManager::GetInstance()->Draw("tutorialClick", l_Menu, t_Menu + size, s_x, s_y);
 				}
 				// score
-				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + 200 && e.button.y >= t_Menu + 160 && e.button.y <= t_Menu + 203)
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 2 * size && e.button.y <= t_Menu + 2 * size + 90)
 				{
-					TextureManager::GetInstance()->Draw("scoreClick", l_Menu, t_Menu + 160, 200, 43);
+					TextureManager::GetInstance()->Draw("scoreClick", l_Menu, t_Menu + 2 * size, s_x, s_y);
 				}
 				// quit
-				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 3*size && e.button.y <= t_Menu + 3*size + 90) 
+				else if (e.button.x >= l_Menu && e.button.x <= l_Menu + s_x && e.button.y >= t_Menu + 3 * size && e.button.y <= t_Menu + 3 * size + 90)
 				{
 					TextureManager::GetInstance()->Draw("quitClick", l_Menu, t_Menu + 3 * size, s_x, s_y);
 				}
@@ -345,7 +346,7 @@ void Engine::Tutorial()
 			if (e.button.button == SDL_BUTTON_LEFT) 
 			{
 				if (e.button.x >= 1180 && e.button.x <= 1260 && e.button.y >= 20 && e.button.y <= 100) {
-					TextureManager::GetInstance()->Draw("BACKClick", 1180, 20, 70, 70);
+					TextureManager::GetInstance()->Draw("BACKClick", 1179, 17, 75, 75);
 					// return;
 				}
 			}
@@ -375,21 +376,37 @@ void Engine::Score()
 	SDL_RenderClear(renderer);
 
 	cout << "Score" << endl;
+	
 	TextureManager::GetInstance()->Draw("bg2", 0, 0, 1280, 720);
 	TextureManager::GetInstance()->Draw("BACK", 1180, 20, 70, 70);
+	TextureManager::GetInstance()->Draw("Champion", 470, 30, 86, 75);
+	TextureManager::GetInstance()->Draw("Champion", 700, 30, 86, 75);
 
-	Read_Score();
+	List.write();
 
 	SDL_Event e;
 	while (1) {
 
 		Node* i = List.Head();
+		RenderText2("B X H", 570, 30, { 30, 255, 20 }, 70);
 		
-		for (int count = 0; count < 20; count++)
+		for (int count = 0; count < 10; count++)
 		{
-			RenderText2(i->name.c_str(), 100, count*20 + 50, { 255, 50, 0 }, 30);
+			string s_i = to_string(count+1) + ".";
+			RenderText2(s_i.c_str(), 80, count * 35 + 140, { 255, 50, 0 }, 45);
+			RenderText2(i->name.c_str(), 135, count * 35 + 140, {255, 50, 0}, 45);
 			string s_score = to_string(i->score);
-			RenderText2(s_score.c_str(), 300, count*20 + 50, {255, 50, 0}, 20);
+			RenderText2(s_score.c_str(), 335, count * 35 + 140, {255, 50, 0}, 45);
+			i = i->next;
+		}
+
+		for (int count = 10; count < 20; count++)
+		{
+			string s_i = to_string(count+1) + ".";
+			RenderText2(s_i.c_str(), 500, (count-10) * 35 + 140, { 255, 50, 0 }, 45);
+			RenderText2(i->name.c_str(), 565, (count - 10) * 35 + 140, { 255, 50, 0 }, 45);
+			string s_score = to_string(i->score);
+			RenderText2(s_score.c_str(), 770, (count - 10) * 35 + 140, { 255, 50, 0 }, 45);
 			i = i->next;
 		}
 
@@ -400,7 +417,7 @@ void Engine::Score()
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				if (e.button.x >= 1180 && e.button.x <= 1260 && e.button.y >= 20 && e.button.y <= 100) {
-					TextureManager::GetInstance()->Draw("BACKClick", 1180, 20, 70, 70);
+					TextureManager::GetInstance()->Draw("BACKClick", 1179, 17, 75, 75);
 					// return;
 				}
 			}
