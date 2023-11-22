@@ -99,6 +99,7 @@ bool Engine::Init(const char* title, int x, int y, int w, int h, bool fScreen)
 	TextureManager::GetInstance()->Load("enterClick", "bg/enterClick.png");
 
 	TextureManager::GetInstance()->Load("Champion", "bg/champion.png");
+	TextureManager::GetInstance()->Load("input", "bg/input.png");
 
 	return true;
 }
@@ -378,9 +379,10 @@ void Engine::Score()
 	cout << "Score" << endl;
 	
 	TextureManager::GetInstance()->Draw("bg2", 0, 0, 1280, 720);
-	TextureManager::GetInstance()->Draw("BACK", 1180, 20, 70, 70);
 	TextureManager::GetInstance()->Draw("Champion", 470, 30, 86, 75);
 	TextureManager::GetInstance()->Draw("Champion", 700, 30, 86, 75);
+	TextureManager::GetInstance()->Draw("input", 525, 600, 245, 75);
+	TextureManager::GetInstance()->Draw("BACK", 1179, 17, 75, 75);
 
 	List.write();
 
@@ -393,26 +395,110 @@ void Engine::Score()
 		for (int count = 0; count < 10; count++)
 		{
 			string s_i = to_string(count+1) + ".";
-			RenderText2(s_i.c_str(), 80, count * 35 + 140, { 255, 50, 0 }, 45);
-			RenderText2(i->name.c_str(), 135, count * 35 + 140, {255, 50, 0}, 45);
+			RenderText2(s_i.c_str(), 180, count * 35 + 140, { 25, 250, 20 }, 45);
+			RenderText2(i->name.c_str(), 235, count * 35 + 140, { 50, 250, 20 }, 45);
 			string s_score = to_string(i->score);
-			RenderText2(s_score.c_str(), 335, count * 35 + 140, {255, 50, 0}, 45);
+			RenderText2(s_score.c_str(), 450, count * 35 + 140, { 25, 250, 20 }, 45);
 			i = i->next;
 		}
 
 		for (int count = 10; count < 20; count++)
 		{
 			string s_i = to_string(count+1) + ".";
-			RenderText2(s_i.c_str(), 500, (count-10) * 35 + 140, { 255, 50, 0 }, 45);
-			RenderText2(i->name.c_str(), 565, (count - 10) * 35 + 140, { 255, 50, 0 }, 45);
+			RenderText2(s_i.c_str(), 700, (count-10) * 35 + 140, { 255, 255, 255 }, 45);
+			RenderText2(i->name.c_str(), 765, (count - 10) * 35 + 140, { 255, 255, 255 }, 45);
 			string s_score = to_string(i->score);
-			RenderText2(s_score.c_str(), 770, (count - 10) * 35 + 140, { 255, 50, 0 }, 45);
+			RenderText2(s_score.c_str(), 970, (count - 10) * 35 + 140, { 255, 255, 255 }, 45);
 			i = i->next;
 		}
 
 		SDL_PollEvent(&e);
 		SDL_Delay(10);
 		switch (e.type) {
+		case SDL_MOUSEBUTTONDOWN:
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				if (e.button.x >= 1180 && e.button.x <= 1260 && e.button.y >= 20 && e.button.y <= 100) {
+					TextureManager::GetInstance()->Draw("BACKClick", 1179, 17, 75, 75);
+				}
+			}
+			break;
+		case SDL_MOUSEBUTTONUP:
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				if (e.button.x >= 1180 && e.button.x <= 1260 && e.button.y >= 20 && e.button.y <= 100) {
+					return;
+				}
+			}
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				if (e.button.x >= 525 && e.button.y <= 770 && e.button.y >= 600 && e.button.y <= 675)
+				{
+					search_Score();
+					SDL_RenderClear(renderer);
+					TextureManager::GetInstance()->Draw("bg2", 0, 0, 1280, 720);
+					TextureManager::GetInstance()->Draw("Champion", 470, 30, 86, 75);
+					TextureManager::GetInstance()->Draw("Champion", 700, 30, 86, 75);
+					TextureManager::GetInstance()->Draw("input", 525, 600, 245, 75);
+					TextureManager::GetInstance()->Draw("BACK", 1179, 17, 75, 75);
+				}
+			}
+			break;
+		case SDL_QUIT:
+			clean();
+			TextureManager::GetInstance()->Clean();
+			isRunning = false;
+			clean();
+			exit(0);
+		}
+		SDL_RenderPresent(renderer);
+	}
+}
+
+void Engine::search_Score()
+{
+	cout << "search" << endl;
+
+	SDL_RenderClear(renderer);
+	TextureManager::GetInstance()->Draw("bg2", 0, 0, 1280, 720);
+	TextureManager::GetInstance()->Draw("BACK", 1180, 20, 70, 70);
+	TextureManager::GetInstance()->Draw("Champion", 470, 30, 86, 75);
+	TextureManager::GetInstance()->Draw("Champion", 700, 30, 86, 75);
+	TextureManager::GetInstance()->Draw("input", 525, 600, 245, 75);
+
+	string search_name = "";
+
+	SDL_Event e;
+	SDL_StartTextInput();
+
+	while (1) {
+		SDL_RenderClear(renderer);
+		TextureManager::GetInstance()->Draw("bg2", 0, 0, 1280, 720);
+		TextureManager::GetInstance()->Draw("BACK", 1180, 20, 70, 70);
+		TextureManager::GetInstance()->Draw("Champion", 470, 30, 86, 75);
+		TextureManager::GetInstance()->Draw("Champion", 700, 30, 86, 75);
+		TextureManager::GetInstance()->Draw("input", 525, 600, 245, 75);
+
+		RenderText2("B X H", 570, 30, { 30, 255, 20 }, 70);
+
+		SDL_PollEvent(&e);
+		SDL_Delay(10);
+		switch (e.type) {
+		case SDL_KEYDOWN:
+		case SDL_TEXTINPUT:
+			if (e.key.keysym.scancode == SDL_SCANCODE_BACKSPACE && search_name.length() > 0)
+			{
+				search_name = search_name.substr(0, search_name.length() - 1);
+			}
+			else if (e.type == SDL_TEXTINPUT)
+			{
+				if (search_name.length() <= 12)
+				{
+					search_name += e.text.text;
+				}
+			}
+			break;
+
 		case SDL_MOUSEBUTTONDOWN:
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
@@ -437,17 +523,47 @@ void Engine::Score()
 			clean();
 			exit(0);
 		}
+
+		if (search_name.compare("") != 0)
+		{
+			RenderText2(search_name.c_str(), 555, 615, { 255, 255, 255, 255 }, 38);
+		}
+
+		Node* i = List.Head();
+		int count = 1;
+
+		/*string s_i = to_string(count + 1) + ".";
+		RenderText2(s_i.c_str(), 180, count * 35 + 140, { 25, 250, 20 }, 45);
+		RenderText2(i->name.c_str(), 235, count * 35 + 140, { 50, 250, 20 }, 45);
+		string s_score = to_string(i->score);
+		RenderText2(s_score.c_str(), 450, count * 35 + 140, { 25, 250, 20 }, 45);
+		i = i->next;*/
+
+		while (i != NULL)
+		{
+			if (i->name.find(search_name) != string::npos && (search_name.length() != 0))
+			{
+				string s_i = to_string(count + 1) + ".";
+				RenderText2(s_i.c_str(), 180, count * 30 + 50, { 25, 250, 20 }, 30);
+				RenderText2(i->name.c_str(), 235, count * 35 + 140, { 50, 250, 20 }, 45);
+				string s_score = to_string(i->score);
+				RenderText2(s_score.c_str(), 450, count * 35 + 140, { 25, 250, 20 }, 45);
+				
+			}
+			i = i->next;
+			count++;
+		}
+		delete i;
 		SDL_RenderPresent(renderer);
 	}
 }
 
 int Engine::BeforePlay() {
 	SDL_RenderClear(renderer);
+
 	TextureManager::GetInstance()->Draw("bg1", 0, 0, 1280, 720);
 	TextureManager::GetInstance()->Draw("easy", 400, 100, 162, 85);
-
 	TextureManager::GetInstance()->Draw("nor", 600, 100, 141, 85);
-
 	TextureManager::GetInstance()->Draw("hard", 800, 100, 167, 85);
 
 	SDL_RenderPresent(renderer);

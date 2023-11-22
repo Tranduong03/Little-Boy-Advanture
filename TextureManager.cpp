@@ -45,7 +45,7 @@ void TextureManager::Draw(string id, int x, int y, int width, int height, SDL_Re
 
 void TextureManager::DrawFrame(string id, int x, int y, int width, int height, int row, int frame, int size, SDL_RendererFlip flip, float _Angle)
 {
-	SDL_Rect srcRect = { width * frame, height * row, width, height };// phần của hình ảnh mà ta muốn hiển thị
-	SDL_Rect dstRect = { x, y, size==NULL ? width : size, size==NULL ? height : size };// vị trí của hình ảnh trên màng hình
+	SDL_Rect srcRect = { width * frame, height * row, width, height };
+	SDL_Rect dstRect = { x, y, size==NULL ? width : size, size==NULL ? height : size };
 	SDL_RenderCopyEx(Engine::GetInstance()->GetRenderer(), listTexture[id], &srcRect, &dstRect, _Angle, nullptr, flip);
 }

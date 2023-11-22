@@ -49,6 +49,8 @@ public:
 	int InputName();
 	void Output_Score();
 	void Read_Score();
+	void search_Score();
+	// void print_Search(string);
 
 private:
 	static Engine* Instance;

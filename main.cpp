@@ -12,8 +12,12 @@ int main(int argc, char* argv[])
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         1280, 720, 0);
 
+    Engine::GetInstance()->Read_Score();
+    cout << endl;
+
     do {
         Engine::GetInstance()->restart();
+
         cout << "Trang thai hien tai:" << cur_status << endl;
         if (cur_status == 1) Engine::GetInstance()->Menu();
         else
@@ -28,7 +32,10 @@ int main(int argc, char* argv[])
         }
 
         cur_status = Engine::GetInstance()->FinishGame();
+        Engine::GetInstance()->Output_Score();
     } while (cur_status != 0);
+
+    
     Engine::GetInstance()->clean();
     return 0;
 }

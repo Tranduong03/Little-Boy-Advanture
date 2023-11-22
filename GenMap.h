@@ -48,30 +48,17 @@ public:
 
 	//void NewMap(int, int, int);
 	//void clean();
-
 	void setMap(int);	// level
-
 	int countBoomOnPixel(int, int);	// input: index
-
 	void printMap();	// level
-
 	int getBoom();
-
 	void DrawPixel();
-
 	void UpdateMap(struct position pos, SDL_Event);
-
 	int CheckMap();
-
 	void OpenCellVal0(int, int);
-
 	void MapWinOpen();
-
 	void MapLoseOpen();
-
 	int getRows() { return rows; }
-
-	struct position getcell_locate(int, int);// l?y v? trí ô t? v? trí chu?t
-
+	struct position getcell_locate(int, int);// lay vi trí ô tai vi trí chuot
 	int score();
 };
